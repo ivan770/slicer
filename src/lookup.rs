@@ -16,6 +16,13 @@ use tokio_stream::wrappers::ReadDirStream;
 ///
 /// Utilizes the `PATH` environment variable to perform the lookup.
 pub async fn resolve_executable(executable: &str) -> Result<Utf8PathBuf, crate::Error> {
+    // If the provided executable is an absolute path - just utilize it.
+    //
+    // Mimics the behavior of `Path::has_root`.
+    if executable.starts_with('/') {
+        return Ok(Utf8PathBuf::from(executable));
+    }
+
     // Scanning the current directory is explicitly not implemented,
     // as this program assumes that you run it from something like a global menu.
     let path = env::var("PATH").map_err(|_| crate::Error::AppNotFound)?;
